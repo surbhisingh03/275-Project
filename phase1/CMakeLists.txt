@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.20)
+project(YellowTaxiProject LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+add_executable(taxi_reader src/main.cpp src/csv_reader.cpp src/taxi_analyzer.cpp)
+target_include_directories(taxi_reader PRIVATE include)

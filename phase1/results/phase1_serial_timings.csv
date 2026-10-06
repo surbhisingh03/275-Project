@@ -1,0 +1,16 @@
+run,elapsed_seconds
+1,284.129
+2,282.759
+3,283.022
+4,282.030
+5,282.371
+6,282.059
+7,282.064
+8,282.302
+9,281.879
+10,281.551
+
+Average runtime: 282.417 seconds
+Fastest runtime: 281.551 seconds
+Slowest runtime: 284.129 seconds
+Rows processed: 49437127
