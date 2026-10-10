@@ -18,7 +18,6 @@ import matplotlib
 matplotlib.use("Agg")   # save to files, no window
 import matplotlib.pyplot as plt
 
-TIME_COLUMNS = ["time_1h_s", "time_1d_s", "time_1w_s", "time_1m_s"]
 THREAD_LIST = [1, 2, 4, 8]
 
 # one fixed color per version, so a version has the same color in every chart
@@ -85,13 +84,9 @@ if not runs:
     print("No runs with that many trips.")
     raise SystemExit
 
-# all four time searches added together, as one number
-for r in runs:
-    r["time_all_s"] = sum(float(r[c]) for c in TIME_COLUMNS)
-
 # ---- print a table for the report ----
 print(f"{'version':20} {'threads':>7} {'runs':>5} {'load s (avg / min / max)':>30} "
-      f"{'distance report s':>18} {'time searches s':>16} {'trip data MB':>13} {'peak MB':>8} {'peak/data':>10}")
+      f"{'distance report s':>18} {'trip data MB':>13} {'peak MB':>8} {'peak/data':>10}")
 for version in ["phase1", "step1_threads_old", "step1_threads", "step2_compact"]:
     for threads in THREAD_LIST:
         n = len([r for r in runs if r["version"] == version and int(r["threads"]) == threads])
@@ -99,11 +94,10 @@ for version in ["phase1", "step1_threads_old", "step1_threads", "step2_compact"]
             continue
         load = average(runs, version, threads, "load_s")
         distance = average(runs, version, threads, "distance_report_s")
-        times = average(runs, version, threads, "time_all_s")
         data = average(runs, version, threads, "data_mb")
         memory = average(runs, version, threads, "peak_memory_mb")
         print(f"{version:20} {threads:>7} {n:>5} {load[0]:>12.3f} / {load[1]:.3f} / {load[2]:.3f} "
-              f"{distance[0]:>18.4f} {times[0]:>16.4f} {data[0]:>13.0f} {memory[0]:>8.0f} {memory[0] / data[0]:>10.2f}")
+              f"{distance[0]:>18.4f} {data[0]:>13.0f} {memory[0]:>8.0f} {memory[0] / data[0]:>10.2f}")
 
 os.makedirs("results", exist_ok=True)
 

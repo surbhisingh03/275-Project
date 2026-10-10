@@ -1,13 +1,15 @@
 # CmpE 275 Mini 1: NYC Yellow Taxi 2014, Jan–May
 
-We load NYC taxi trips into memory and run two kinds of searches on them: a **distance report**
-(5 distance buckets) and **time windows** (1 hour, 1 day, 1 week, 1 month). Phase 1 does this the
-plain object-oriented way; Phase 2 adds threads (step 1) and then a compact layout (step 2).
+We load NYC taxi trips into memory and run a **distance report** on them: 5 distance searches, one per
+bucket (0–1, 1–3, 3–5, 5–10, over 10 miles). Each search counts the matching trips and adds up their fares,
+distances, tips and totals.
+
+Phase 1 does this the plain object-oriented way; Phase 2 adds threads (step 1) and then a compact layout (step 2).
 
 | Folder | What it is |
 | --- | --- |
 | `phase1/` | v0, the first version (one pass over the file). Kept for reference; it expects the portal's CSV export format, not the API download below |
-| `phase1_v2/` | Phase 1: all trips in a `std::vector<TaxiTrip>`, two searches, no threads |
+| `phase1_v2/` | Phase 1: all trips in a `std::vector<TaxiTrip>`, the distance report, no threads |
 | `phase2/` | Phase 2: `step1_threads/` (Phase 1 design + OpenMP) and `step2_compact/` (one array per field, the `taxistore` library) |
 | `scripts/` | Download, run-everything, summary and memory-timeline scripts |
 | `results_summary.md` | All measurements side by side (made by `scripts/summarize_results.py`) |
@@ -54,7 +56,7 @@ awk 'NR==1 || (NR-2)%7==0' ~/Downloads/taxi2014/yellow_tripdata_2014_jan_may.csv
 
 This keeps the header and every 7th trip: **10,238,173 trips, 2.0 GB**, about 2 million from each month.
 Don't use `head` instead: the full file is in date order, so its first 10 million trips are all from January,
-and the March time searches would find nothing.
+and the results would describe January only.
 
 ## 4. Build each project
 
@@ -106,14 +108,11 @@ OMP_NUM_THREADS=8 ./build/taxi_compact $FILE        # step 2: compact arrays + t
 
 # step 2 is the only version that can load the whole file on an 8 GB Mac
 OMP_NUM_THREADS=8 ./build/taxi_compact ~/Downloads/taxi2014/yellow_tripdata_2014_jan_may.csv
-
-# the same with macOS's allocator cache turned off (Signal 3)
-MallocLargeCache=0 OMP_NUM_THREADS=8 ./build/taxi_threads $FILE
 cd ..
 ```
 
-Each run prints the trips loaded, load time, trip data and peak memory, the distance report and the
-4 time searches, and adds one line to `results/phase1_v2_runs.csv` or `results/phase2_runs.csv`.
+Each run prints the trips loaded, load time, trip data and peak memory, and the distance report, and
+adds one line to `results/phase1_v2_runs.csv` or `results/phase2_runs.csv`.
 
 ## 6. Benchmarks
 
@@ -133,8 +132,7 @@ caffeinate -i ./scripts/run_everything.sh \
 | `build` | Builds both projects | 1 min |
 | `phase1` | Phase 1, 10 runs | ~15 min |
 | `phase2` | Step 1 (Phase 1 parsing: 3 runs; our parsing: 10 runs) and step 2 (10 runs), at 1, 2, 4 and 8 threads | ~65 min |
-| `cacheoff` | Step 1 and step 2 with `MallocLargeCache=0`, 1/2/4/8 threads, 3 runs each | ~7 min |
-| `fulldata` | Step 2 on all 71.7M trips, 8 threads, 3 runs (+1 with the cache off) | ~5 min |
+| `fulldata` | Step 2 on all 71.7M trips, 8 threads, 3 runs | ~3 min |
 | `memory` | Memory-over-time recordings of Phase 1, step 1 and step 2 | ~2 min |
 | `summary` | Writes `results_summary.md` and the charts | seconds |
 
@@ -177,8 +175,7 @@ python3 scripts/memory_timeline.py plot       # memory_results/memory_timeline.p
 | --- | --- |
 | `phase1_v2/results/phase1_v2_runs.csv` | One line per Phase 1 run |
 | `phase2/results/phase2_runs.csv` | One line per Phase 2 run (version, threads, times, memory) |
-| `phase2/cache_off/results/phase2_runs.csv` | Phase 2 runs with `MallocLargeCache=0` |
-| `phase2/full_data/results/phase2_runs.csv` | Step 2 on the full file (`full_data/cache_off/` for the cache-off run) |
+| `phase2/full_data/results/phase2_runs.csv` | Step 2 on the full file |
 | `*/results/*.txt` | The full printed output of each run; used to check that every version found the same trips |
 | `memory_results/` | Memory-over-time recordings (CSV) and `memory_timeline.png` |
 | `results_summary.md` | Everything above, side by side |

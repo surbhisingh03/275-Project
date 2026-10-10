@@ -18,7 +18,7 @@ struct SearchResult
 // Returns false if the file could not be opened.
 bool loadTrips(const std::string& file_name, long long max_rows, std::vector<TaxiTrip>& trips);
 
-// The two searches. Both look at every trip.
+// The search: looks at every trip and adds up the ones with
+// more than min_miles, up to and including max_miles.
 // The vector is passed by reference (&) so the trips are not copied.
-SearchResult searchByDistance(const std::vector<TaxiTrip>& trips, double min_miles, double max_miles);  // more than min, up to and including max
-SearchResult searchByTime(const std::vector<TaxiTrip>& trips, long long from_time, long long to_time);   // pickup from "from" up to (not including) "to"
+SearchResult searchByDistance(const std::vector<TaxiTrip>& trips, double min_miles, double max_miles);

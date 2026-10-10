@@ -99,7 +99,7 @@ int main(int argc, char** argv)
     std::cout << "Trip data in memory: " << data_mb << " MB" << std::endl;
     std::cout << "Peak memory (whole program): " << memory_mb << " MB" << std::endl;
 
-    // ---- search 1: distance report, five buckets ----
+    // ---- the search: distance report, five buckets ----
     // bucket i is: more than limits[i] miles, up to limits[i+1] miles.
     // The first limit is -1 (not 0) so that trips of exactly 0 miles are counted in the first bucket.
     double limits[] = {-1, 1, 3, 5, 10, 1e12};
@@ -121,23 +121,6 @@ int main(int argc, char** argv)
     }
     std::cout << "Distance report time (5 searches): " << distance_seconds << " s" << std::endl;
 
-    // ---- search 2: time windows of different sizes ----
-    std::string window_names[] = {"1 hour", "1 day", "1 week", "1 month"};
-    std::string window_from[] = {"2014-03-10T08:00:00", "2014-03-10T00:00:00", "2014-03-10T00:00:00", "2014-03-01T00:00:00"};
-    std::string window_to[]   = {"2014-03-10T09:00:00", "2014-03-11T00:00:00", "2014-03-17T00:00:00", "2014-04-01T00:00:00"};
-    double time_seconds[4];
-
-    std::cout << "\nTime searches" << std::endl;
-    for (int i = 0; i < 4; i++)
-    {
-        start = now();
-        SearchResult r = store.searchByTime(parseDate(window_from[i]), parseDate(window_to[i]));
-        time_seconds[i] = now() - start;
-
-        printResult(window_names[i] + " from " + window_from[i], r);
-        std::cout << "  Search time: " << time_seconds[i] << " s" << std::endl;
-    }
-
     // ---- save one line per run, so we can average the runs later ----
     std::string results_file = "results/phase2_runs.csv";
     bool new_file = !std::ifstream(results_file).good();
@@ -149,11 +132,9 @@ int main(int argc, char** argv)
     }
     if (new_file)
     {
-        out << "version,threads,trips,load_s,distance_report_s,time_1h_s,time_1d_s,time_1w_s,time_1m_s,data_mb,peak_memory_mb\n";
+        out << "version,threads,trips,load_s,distance_report_s,data_mb,peak_memory_mb\n";
     }
-    out << version << "," << threads << "," << store.size() << "," << load_seconds << "," << distance_seconds << ","
-        << time_seconds[0] << "," << time_seconds[1] << "," << time_seconds[2] << ","
-        << time_seconds[3] << "," << data_mb << "," << memory_mb << "\n";
+    out << version << "," << threads << "," << store.size() << "," << load_seconds << "," << distance_seconds << "," << data_mb << "," << memory_mb << "\n";
 
     return 0;
 }

@@ -213,31 +213,3 @@ SearchResult TripStore::searchByDistance(double min_miles, double max_miles) con
     return result;
 }
 
-SearchResult TripStore::searchByTime(long long from_time, long long to_time) const
-{
-    long long from = from_time - TIME_BASE;
-    long long to = to_time - TIME_BASE;
-    long long count = 0, fare = 0, tip = 0, total = 0;
-    double distance_sum = 0;
-
-    #pragma omp parallel for reduction(+:count, fare, tip, total, distance_sum)
-    for (long long i = 0; i < size(); i++)
-    {
-        if (pickup_time[i] >= from && pickup_time[i] < to)
-        {
-            count++;
-            fare += fare_cents[i];
-            tip += tip_cents[i];
-            total += total_cents[i];
-            distance_sum += trip_distance[i];
-        }
-    }
-
-    SearchResult result;
-    result.count = count;
-    result.fare_sum = fare / 100.0;
-    result.tip_sum = tip / 100.0;
-    result.total_sum = total / 100.0;
-    result.distance_sum = distance_sum;
-    return result;
-}

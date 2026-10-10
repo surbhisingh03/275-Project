@@ -1,7 +1,7 @@
 # Phase 2: threads, then compact data
 
-Two changes to phase1_v2, measured separately. The same two searches as phase 1 (distance report
-with 5 buckets, and 4 time windows), so results can be compared.
+Two changes to phase1_v2, measured separately. The same search as phase 1 (the distance report
+with 5 buckets), so results can be compared.
 
 | Folder | What it is |
 | --- | --- |

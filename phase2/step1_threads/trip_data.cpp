@@ -76,29 +76,3 @@ SearchResult searchByDistance(const std::vector<TaxiTrip>& trips, double min_mil
     return result;
 }
 
-SearchResult searchByTime(const std::vector<TaxiTrip>& trips, long long from_time, long long to_time)
-{
-    long long count = 0;
-    double fare_sum = 0, distance_sum = 0, tip_sum = 0, total_sum = 0;
-
-    #pragma omp parallel for reduction(+:count, fare_sum, distance_sum, tip_sum, total_sum)
-    for (long long i = 0; i < (long long)trips.size(); i++)
-    {
-        if (trips[i].pickup_time >= from_time && trips[i].pickup_time < to_time)
-        {
-            count++;
-            fare_sum += trips[i].fare_amount;
-            distance_sum += trips[i].trip_distance;
-            tip_sum += trips[i].tip_amount;
-            total_sum += trips[i].total_amount;
-        }
-    }
-
-    SearchResult result;
-    result.count = count;
-    result.fare_sum = fare_sum;
-    result.distance_sum = distance_sum;
-    result.tip_sum = tip_sum;
-    result.total_sum = total_sum;
-    return result;
-}

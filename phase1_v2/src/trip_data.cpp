@@ -38,15 +38,3 @@ SearchResult searchByDistance(const std::vector<TaxiTrip>& trips, double min_mil
     return result;
 }
 
-SearchResult searchByTime(const std::vector<TaxiTrip>& trips, long long from_time, long long to_time)
-{
-    SearchResult result;
-    for (size_t i = 0; i < trips.size(); i++)
-    {
-        if (trips[i].pickup_time >= from_time && trips[i].pickup_time < to_time)
-        {
-            addToResult(result, trips[i]);
-        }
-    }
-    return result;
-}

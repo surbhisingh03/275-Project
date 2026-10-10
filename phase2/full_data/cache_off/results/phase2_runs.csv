@@ -1,2 +1,0 @@
-version,threads,trips,load_s,distance_report_s,time_1h_s,time_1d_s,time_1w_s,time_1m_s,data_mb,peak_memory_mb
-step2_compact,8,71667210,42.936,0.263588,0.0100362,0.00731111,0.00940609,0.0200241,3895.79,3938.87

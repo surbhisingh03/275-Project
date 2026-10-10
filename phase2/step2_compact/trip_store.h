@@ -16,9 +16,8 @@ class TripStore
 public:
     bool load(const std::string& file_name, int threads);
 
-    // Same two searches as before. Times are normal "seconds since 1970", like parseDate gives.
-    SearchResult searchByDistance(double min_miles, double max_miles) const;   // more than min, up to and including max
-    SearchResult searchByTime(long long from_time, long long to_time) const;   // pickup from "from" up to (not including) "to"
+    // The same search as phase 1: more than min_miles, up to and including max_miles.
+    SearchResult searchByDistance(double min_miles, double max_miles) const;
 
     long long size() const { return fare_cents.size(); }
     int bytesPerTrip() const;    // how many bytes one trip takes in our arrays

@@ -9,6 +9,6 @@
 // Returns false if the file could not be opened.
 bool loadTrips(const std::string& file_name, int threads, std::vector<TaxiTrip>& trips);
 
-// The two searches. Both look at every trip, split between the threads.
-SearchResult searchByDistance(const std::vector<TaxiTrip>& trips, double min_miles, double max_miles);  // more than min, up to and including max
-SearchResult searchByTime(const std::vector<TaxiTrip>& trips, long long from_time, long long to_time);   // pickup from "from" up to (not including) "to"
+// The search: looks at every trip, split between the threads, and adds up the ones with
+// more than min_miles, up to and including max_miles.
+SearchResult searchByDistance(const std::vector<TaxiTrip>& trips, double min_miles, double max_miles);
