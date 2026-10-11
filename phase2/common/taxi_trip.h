@@ -36,4 +36,5 @@ struct SearchResult
     double distance_sum = 0;
     double tip_sum = 0;
     double total_sum = 0;
+    double all_fields_sum = 0;   // trip lookups only: every other field added up, so the whole trip is really read
 };

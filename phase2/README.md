@@ -1,7 +1,8 @@
 # Phase 2: threads, then compact data
 
-Two changes to phase1_v2, measured separately. The same search as phase 1 (the distance report
-with 5 buckets), so results can be compared.
+Two changes to phase1_v2, measured separately. The same queries as phase 1, so results can be compared:
+the distance report (5 buckets, a few fields of all trips) and the trip lookups by ID (1M random IDs, all
+fields of each trip). The lookups are where we expect objects to beat compact arrays.
 
 | Folder | What it is |
 | --- | --- |

@@ -1,4 +1,4 @@
-version,threads,trips,load_s,distance_report_s,fetch_over10_s,fetch_3to5_s,data_mb,peak_memory_mb
-step2_compact,8,71667210,51.2655,0.34475,1.88135,8.78062,3895.79,5689.23
-step2_compact,8,71667210,49.5942,0.283094,1.67653,4.57541,3895.79,5896.61
-step2_compact,8,71667210,46.7543,0.31265,1.65294,5.06821,3895.79,5732.67
+version,threads,trips,load_s,distance_report_s,data_mb,peak_memory_mb,lookup_first_s,lookup_settled_s
+step2_compact,8,71667210,48.3241,0.312042,3895.79,5689.2,21.643,27.5053
+step2_compact,8,71667210,48.4,0.31947,3895.79,5689.25,14.5596,23.6294
+step2_compact,8,71667210,47.463,0.335548,3895.79,5896.49,1.75172,0.67718

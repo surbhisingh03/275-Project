@@ -76,3 +76,34 @@ SearchResult searchByDistance(const std::vector<TaxiTrip>& trips, double min_mil
     return result;
 }
 
+
+SearchResult lookupTrips(const std::vector<TaxiTrip>& trips, const std::vector<long long>& ids)
+{
+    long long count = 0;
+    double fare_sum = 0, distance_sum = 0, tip_sum = 0, total_sum = 0, all_fields_sum = 0;
+
+    #pragma omp parallel for reduction(+:count, fare_sum, distance_sum, tip_sum, total_sum, all_fields_sum)
+    for (long long k = 0; k < (long long)ids.size(); k++)
+    {
+        const TaxiTrip& t = trips[ids[k]];
+        count++;
+        fare_sum += t.fare_amount;
+        distance_sum += t.trip_distance;
+        tip_sum += t.tip_amount;
+        total_sum += t.total_amount;
+        // the other 14 fields
+        all_fields_sum += (double)t.pickup_time + t.dropoff_time + t.passenger_count
+            + t.pickup_longitude + t.pickup_latitude + t.dropoff_longitude + t.dropoff_latitude
+            + t.vendor_id[0] + t.store_and_fwd_flag[0] + t.payment_type[0] + t.rate_code
+            + t.mta_tax + t.tolls_amount + t.imp_surcharge;
+    }
+
+    SearchResult result;
+    result.count = count;
+    result.fare_sum = fare_sum;
+    result.distance_sum = distance_sum;
+    result.tip_sum = tip_sum;
+    result.total_sum = total_sum;
+    result.all_fields_sum = all_fields_sum;
+    return result;
+}

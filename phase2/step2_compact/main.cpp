@@ -7,7 +7,9 @@
 
 #include <chrono>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
+#include <random>
 #include <string>
 #include <vector>
 #include <omp.h>
@@ -121,6 +123,36 @@ int main(int argc, char** argv)
     }
     std::cout << "Distance report time (5 searches): " << distance_seconds << " s" << std::endl;
 
+    // ---- the second query: trip lookups by ID ----
+    // Like a help desk answering 1,000,000 passenger requests: each names one trip (its row
+    // number, as the data has no trip ID) and needs ALL its fields.
+    // Fixed seed, so every version and every run looks up the same trips.
+    const long long LOOKUPS = 1000000;
+    std::mt19937_64 random_numbers(275);
+    std::vector<long long> ids(LOOKUPS);
+    for (long long k = 0; k < LOOKUPS; k++)
+    {
+        ids[k] = random_numbers() % store.size();
+    }
+
+    // Done 5 times. The first time can be slow if macOS compressed or swapped part of the
+    // trip data while loading; by the 5th time it is back in normal memory ("settled").
+    SearchResult looked_up;
+    double lookup_first_seconds = 0, lookup_settled_seconds = 0;
+    std::cout << "\nTrip lookups (" << LOOKUPS << " random trip IDs, all fields)" << std::endl;
+    for (int round = 1; round <= 5; round++)
+    {
+        start = now();
+        looked_up = store.lookupTrips(ids);
+        double seconds = now() - start;
+        if (round == 1) lookup_first_seconds = seconds;
+        lookup_settled_seconds = seconds;
+        std::cout << "  Round " << round << ": " << seconds << " s" << std::endl;
+    }
+    printResult("Trip lookups", looked_up);
+    std::cout << "Lookup check: average total " << std::fixed << std::setprecision(2)
+              << looked_up.total_sum / looked_up.count << std::defaultfloat << std::endl;
+
     // ---- save one line per run, so we can average the runs later ----
     std::string results_file = "results/phase2_runs.csv";
     bool new_file = !std::ifstream(results_file).good();
@@ -132,9 +164,10 @@ int main(int argc, char** argv)
     }
     if (new_file)
     {
-        out << "version,threads,trips,load_s,distance_report_s,data_mb,peak_memory_mb\n";
+        out << "version,threads,trips,load_s,distance_report_s,data_mb,peak_memory_mb,lookup_first_s,lookup_settled_s\n";
     }
-    out << version << "," << threads << "," << store.size() << "," << load_seconds << "," << distance_seconds << "," << data_mb << "," << memory_mb << "\n";
+    out << version << "," << threads << "," << store.size() << "," << load_seconds << "," << distance_seconds << "," << data_mb << "," << memory_mb
+        << "," << lookup_first_seconds << "," << lookup_settled_seconds << "\n";
 
     return 0;
 }

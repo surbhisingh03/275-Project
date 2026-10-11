@@ -213,3 +213,34 @@ SearchResult TripStore::searchByDistance(double min_miles, double max_miles) con
     return result;
 }
 
+
+SearchResult TripStore::lookupTrips(const std::vector<long long>& ids) const
+{
+    long long count = 0, fare = 0, tip = 0, total = 0;
+    double distance_sum = 0, all_fields_sum = 0;
+
+    #pragma omp parallel for reduction(+:count, fare, tip, total, distance_sum, all_fields_sum)
+    for (long long k = 0; k < (long long)ids.size(); k++)
+    {
+        long long i = ids[k];
+        count++;
+        fare += fare_cents[i];
+        tip += tip_cents[i];
+        total += total_cents[i];
+        distance_sum += trip_distance[i];
+        // the other 14 fields
+        all_fields_sum += (double)pickup_time[i] + dropoff_time[i] + passenger_count[i]
+            + pickup_longitude[i] + pickup_latitude[i] + dropoff_longitude[i] + dropoff_latitude[i]
+            + vendor[i] + store_and_fwd[i] + payment[i] + rate_code[i]
+            + mta_tax_cents[i] + tolls_cents[i] + surcharge_cents[i];
+    }
+
+    SearchResult result;
+    result.count = count;
+    result.fare_sum = fare / 100.0;
+    result.tip_sum = tip / 100.0;
+    result.total_sum = total / 100.0;
+    result.distance_sum = distance_sum;
+    result.all_fields_sum = all_fields_sum;
+    return result;
+}

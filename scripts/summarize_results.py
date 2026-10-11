@@ -5,6 +5,7 @@
 # Reads (whatever exists):
 #   phase1_v2/results/phase1_v2_runs.csv            phase 1, 10 runs
 #   phase2/results/phase2_runs.csv                  step 1 (old + new parsing) and step 2, 1/2/4/8 threads
+#   (each run: load, distance report, memory, trip lookups)
 #   phase2/full_data/results/phase2_runs.csv        step 2 on the full file
 #   phase1_v2/results/run_*.txt, phase2/results/*.txt   program output, to check every version found the same trips
 #   memory_results/*.csv                            memory-over-time recordings
@@ -36,6 +37,7 @@ def read(path, version=None):
             if version:                 # the phase 1 file has no version/threads columns
                 r["version"] = version
                 r["threads"] = "1"
+            r.pop(None, None)           # extra values on a line (a CSV started before a column was added)
             for key in r:
                 if key != "version" and r[key] not in (None, ""):
                     r[key] = float(r[key])
@@ -52,9 +54,9 @@ def avg(rows, column):
     return sum(values) / len(values) if values else None
 
 
-def spread(rows, column):
+def spread(rows, column, digits=2):
     values = [r[column] for r in rows]
-    return f"{min(values):.2f}–{max(values):.2f}" if values else ""
+    return f"{min(values):.{digits}f}–{max(values):.{digits}f}" if values else ""
 
 
 def compare(base, value):
@@ -127,6 +129,29 @@ else:
             line(f"| {NAMES[version]} | {t} | {dist:.4f} | {spread(rows, 'distance_report_s')} | {speed} |")
     line()
 
+    # ---------- 2b. trip lookups ----------
+    lookup_runs = [r for r in runs if "lookup_settled_s" in r]
+    if lookup_runs:
+        p1_look = avg([r for r in phase1 if "lookup_settled_s" in r], "lookup_settled_s")
+        line("## 2b. Search time: trip lookups by ID")
+        line()
+        line("1,000,000 random trip IDs (row numbers, the same in every run), all 18 fields read for each, "
+             "repeated 5 times. First = round 1, right after the distance report; settled = round 5.")
+        line()
+        line("| Version | Threads | Runs | First s (avg) | Settled s (avg) | fastest–slowest settled | ns per lookup | vs Phase 1 |")
+        line("| --- | --- | --- | --- | --- | --- | --- | --- |")
+        for version in NAMES:
+            for t in THREADS:
+                rows = pick(lookup_runs, version, t)
+                if not rows:
+                    continue
+                first = avg(rows, "lookup_first_s")
+                settled = avg(rows, "lookup_settled_s")
+                speed = "baseline" if version == "phase1" else compare(p1_look, settled)
+                line(f"| {NAMES[version]} | {t} | {len(rows)} | {first:.4f} | {settled:.4f} | "
+                     f"{spread(rows, 'lookup_settled_s', 4)} | {settled * 1e9 / 1000000:.0f} | {speed} |")
+        line()
+
     # ---------- 3. memory ----------
     line("## 3. Memory (Signal 2)")
     line()
@@ -161,6 +186,8 @@ else:
         line(f"| Peak memory | {avg(full, 'peak_memory_mb') / 1024:.2f} GB |")
         line(f"| Same trips as Phase 1 objects (216 bytes each) | {objects_gb:.1f} GB: {fits} in this Mac's {RAM_GB:.0f} GB |")
         line(f"| Distance report | {avg(full, 'distance_report_s'):.3f} s |")
+        if "lookup_settled_s" in full[0]:
+            line(f"| Trip lookups (1M, settled) | {avg(full, 'lookup_settled_s'):.3f} s |")
         line()
 
     # ---------- 5. same answers? ----------
@@ -168,8 +195,8 @@ else:
     line()
     def counts(path):
         with open(path) as fh:
-            # every "<bucket>: <n> trips" line of the distance report
-            return re.findall(r"^(.*?: \d+ trips)$", fh.read(), flags=re.M)
+            # every "<bucket>: <n> trips" line of the distance report, and the trip lookups' check line
+            return re.findall(r"^(.*?: \d+ trips|Lookup check: .*)$", fh.read(), flags=re.M)
     reference_files = sorted(glob.glob("phase1_v2/results/run_*.txt"))
     if reference_files:
         reference = counts(reference_files[0])
@@ -182,7 +209,7 @@ else:
             line(f"**{len(different)} of {checked} phase 2 runs gave different counts from phase 1:** {', '.join(different[:10])}")
         else:
             line(f"Yes: all {checked} phase 2 runs gave exactly the same trip count as phase 1 in each of the "
-                 f"{len(reference)} distance buckets.")
+                 f"5 distance buckets, and the same trip lookups (same average total of the looked-up trips).")
     else:
         line("No phase 1 output to compare with.")
     line()
@@ -222,6 +249,12 @@ else:
         line(f"- **Signal 2, search speed:** distance report {p1_dist:.3f} s in Phase 1 (objects) vs {avg(s2, 'distance_report_s'):.3f} s "
              f"compact on 1 thread ({compare(p1_dist, avg(s2, 'distance_report_s'))}) and {best[0]:.3f} s at {best[1]} threads "
              f"({compare(p1_dist, best[0])}).")
+    l1 = [r for r in pick(runs, "step1_threads", 1) if "lookup_settled_s" in r]
+    l2 = [r for r in pick(runs, "step2_compact", 1) if "lookup_settled_s" in r]
+    if l1 and l2:
+        line(f"- **Trip lookups (all fields of a few trips):** objects {avg(l1, 'lookup_settled_s'):.3f} s vs compact "
+             f"{avg(l2, 'lookup_settled_s'):.3f} s for 1M lookups on 1 thread: compact is "
+             f"{compare(avg(l1, 'lookup_settled_s'), avg(l2, 'lookup_settled_s'))} here.")
     if full:
         line(f"- **Signal 2, full file:** all {int(full[0]['trips']):,} trips load in {avg(full, 'data_mb') / 1024:.1f} GB "
              f"compact; as objects they would need {int(full[0]['trips']) * 216 / 1024 ** 3:.1f} GB.")

@@ -19,6 +19,10 @@ public:
     // The same search as phase 1: more than min_miles, up to and including max_miles.
     SearchResult searchByDistance(double min_miles, double max_miles) const;
 
+    // The second query: look up the trips with these IDs (row numbers) and read ALL their fields.
+    // Here one trip is spread over 18 arrays, so each lookup visits 18 places in memory.
+    SearchResult lookupTrips(const std::vector<long long>& ids) const;
+
     long long size() const { return fare_cents.size(); }
     int bytesPerTrip() const;    // how many bytes one trip takes in our arrays
 

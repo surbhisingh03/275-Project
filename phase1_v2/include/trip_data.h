@@ -12,6 +12,7 @@ struct SearchResult
     double distance_sum = 0;
     double tip_sum = 0;
     double total_sum = 0;
+    double all_fields_sum = 0;   // trip lookups only: every other field added up, so the whole trip is really read
 };
 
 // Read trips from the CSV file into the vector. max_rows = 0 means read everything.
@@ -22,3 +23,7 @@ bool loadTrips(const std::string& file_name, long long max_rows, std::vector<Tax
 // more than min_miles, up to and including max_miles.
 // The vector is passed by reference (&) so the trips are not copied.
 SearchResult searchByDistance(const std::vector<TaxiTrip>& trips, double min_miles, double max_miles);
+
+// The second query: look up the trips with these IDs (row numbers) and read ALL their fields,
+// like a help desk pulling up the full record of each trip a passenger asks about.
+SearchResult lookupTrips(const std::vector<TaxiTrip>& trips, const std::vector<long long>& ids);

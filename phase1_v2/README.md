@@ -6,8 +6,8 @@ The first version in `../phase1` is kept as our v0 (one pass over the file, 282 
 
 - `include/taxi_trip.h`: one trip, every column as a normal C++ type (`extra` is skipped, it is always empty)
 - `include/csv_reader.h`, `src/csv_reader.cpp`: the `CSVReader` class, reads the CSV one trip at a time (columns are in a fixed order)
-- `include/trip_data.h`, `src/trip_data.cpp`: loads all trips into a `std::vector<TaxiTrip>` and the search, `searchByDistance` (count and add up the trips in a distance range)
-- `src/main.cpp`: loads, runs the distance report (5 distance searches), prints times and memory, appends one line to `results/phase1_v2_runs.csv`
+- `include/trip_data.h`, `src/trip_data.cpp`: loads all trips into a `std::vector<TaxiTrip>`, the search `searchByDistance` (count and add up the trips in a distance range) and `lookupTrips` (read all fields of the trips with the given IDs)
+- `src/main.cpp`: loads, runs the distance report (5 distance searches) and the trip lookups (1M random IDs, 5 rounds), prints times and memory, appends one line to `results/phase1_v2_runs.csv`
 
 ## Build (gcc 13+ or Homebrew clang 16+, not Apple's Xcode clang)
 

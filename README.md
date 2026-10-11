@@ -1,8 +1,12 @@
 # CmpE 275 Mini 1: NYC Yellow Taxi 2014, Jan–May
 
-We load NYC taxi trips into memory and run a **distance report** on them: 5 distance searches, one per
-bucket (0–1, 1–3, 3–5, 5–10, over 10 miles). Each search counts the matching trips and adds up their fares,
-distances, tips and totals.
+We load NYC taxi trips into memory and run two kinds of query on them:
+
+- **Distance report** (a few fields of ALL trips): 5 distance searches, one per bucket (0–1, 1–3, 3–5, 5–10,
+  over 10 miles). Each search counts the matching trips and adds up their fares, distances, tips and totals.
+- **Trip lookups by ID** (ALL fields of a few trips): 1,000,000 random trip IDs, like a help desk pulling up
+  the full record of each trip a passenger asks about. The ID is the trip's row number (the data has no ID
+  column); the seed is fixed, so every run looks up the same trips. Done 5 times: round 1 and round 5 are saved.
 
 Phase 1 does this the plain object-oriented way; Phase 2 adds threads (step 1) and then a compact layout (step 2).
 
@@ -111,8 +115,8 @@ OMP_NUM_THREADS=8 ./build/taxi_compact ~/Downloads/taxi2014/yellow_tripdata_2014
 cd ..
 ```
 
-Each run prints the trips loaded, load time, trip data and peak memory, and the distance report, and
-adds one line to `results/phase1_v2_runs.csv` or `results/phase2_runs.csv`.
+Each run prints the trips loaded, load time, trip data and peak memory, the distance report and the trip
+lookups, and adds one line to `results/phase1_v2_runs.csv` or `results/phase2_runs.csv`.
 
 ## 6. Benchmarks
 
@@ -174,7 +178,7 @@ python3 scripts/memory_timeline.py plot       # memory_results/memory_timeline.p
 | File | Contents |
 | --- | --- |
 | `phase1_v2/results/phase1_v2_runs.csv` | One line per Phase 1 run |
-| `phase2/results/phase2_runs.csv` | One line per Phase 2 run (version, threads, times, memory) |
+| `phase2/results/phase2_runs.csv` | One line per Phase 2 run (version, threads, times, memory, lookup times) |
 | `phase2/full_data/results/phase2_runs.csv` | Step 2 on the full file |
 | `*/results/*.txt` | The full printed output of each run; used to check that every version found the same trips |
 | `memory_results/` | Memory-over-time recordings (CSV) and `memory_timeline.png` |
