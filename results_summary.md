@@ -80,6 +80,17 @@ Trip data = trips × bytes per trip (exact). Peak = whole program (macOS footpri
 | Step 2, compact arrays | 4 | 557 | 57 | 1,049 | 1.89 |
 | Step 2, compact arrays | 8 | 557 | 57 | 929 | 1.67 |
 
+## 4. Step 2 on the full file (Signal 2)
+
+71,667,210 trips, trip data 3.80 GB in memory. As Phase 1 objects (216 bytes each) the same trips are 14.4 GB (about 29 GB at peak): would not fit comfortably (not tried) in this Mac's 16 GB.
+
+| Threads | Runs | Load s (avg) | fastest–slowest | Distance report s | Trip lookups (1M, settled) s | Peak memory GB |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 3 | 80.1 | 77.3–85.2 | 0.752 | 0.065 | 4.14 |
+| 2 | 3 | 85.8 | 83.1–91.2 | 0.512 | 0.047 | 7.62 |
+| 4 | 3 | 76.0 | 72.2–80.6 | 0.392 | 0.034 | 7.15 |
+| 8 | 3 | 56.6 | 55.8–57.4 | 0.199 | 0.028 | 5.76 |
+
 ## 5. Did every version find the same trips?
 
 Yes: all 92 phase 2 runs gave exactly the same trip count as phase 1 in each of the 5 distance buckets, and the same trip lookups (same average total of the looked-up trips).
@@ -99,3 +110,4 @@ Yes: all 92 phase 2 runs gave exactly the same trip count as phase 1 in each of 
 - **Signal 2, memory:** 2,109 MB of trip data as objects vs 557 MB compact (3.8× smaller).
 - **Signal 2, search speed:** distance report 0.509 s in Phase 1 (objects) vs 0.102 s compact on 1 thread (5.0× faster) and 0.021 s at 8 threads (23.9× faster).
 - **Trip lookups (all fields of a few trips):** objects 0.021 s vs compact 0.060 s for 1M lookups on 1 thread: compact is 2.8× slower here.
+- **Signal 2, full file:** all 71,667,210 trips load in 3.8 GB compact; as objects they would need 14.4 GB.

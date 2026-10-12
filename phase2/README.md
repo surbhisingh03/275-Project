@@ -43,8 +43,8 @@ python3 make_charts.py      # charts + averages table (needs: python3 -m pip ins
 Run the programs from the `phase2` folder (the scripts do this for you), and give the data file as a
 full path. Every run adds a line to `results/phase2_runs.csv`.
 
-Use the same data file for phase 1 and phase 2, otherwise the numbers cannot be compared. On an 8 GB
-laptop the full file does not fit as objects (phase 1 and step 1), so we use `trips_every7th.csv`
+Use the same data file for phase 1 and phase 2, otherwise the numbers cannot be compared. On a 16 GB
+laptop the full file would barely fit as objects, with no room for loading overhead (phase 1 and step 1; not tried), so we use `trips_every7th.csv`
 (every 7th trip, 10.2M trips; see the main README, section 3). Don't use `head` to make a smaller file:
 the full file is in date order, so the first 10 million trips are all from January.
 

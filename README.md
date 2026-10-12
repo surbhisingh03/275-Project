@@ -41,7 +41,7 @@ Dataset: [2014 Yellow Taxi Trip Data](https://data.cityofnewyork.us/Transportati
 caffeinate -i ./scripts/download_data.sh ~/Downloads/taxi2014 2>&1 | tee ~/Downloads/taxi2014-download.log
 ```
 
-- It makes one request per day (151 days), 12 at a time, and took about 100 minutes for us.
+- It makes one request per day (151 days), 12 at a time. Our first attempt ran for roughly 100 minutes before it stopped partway; running the same command again finished the remaining days.
 - If it ends with "N days missing", run the same command again; finished days are skipped.
 - Optional settings at the start of the command: `PAR=8` (fewer requests at once), `APP_TOKEN=...` (a free NYC Open Data app token, less throttling).
 - Result: `~/Downloads/taxi2014/yellow_tripdata_2014_jan_may.csv`, **71,667,210 trips, about 15 GB**. The script prints the count; when it matches, delete `~/Downloads/taxi2014/days/`.
@@ -50,7 +50,7 @@ caffeinate -i ./scripts/download_data.sh ~/Downloads/taxi2014 2>&1 | tee ~/Downl
 
 ## 3. Make the test file (every 7th trip)
 
-As objects, all 71.7M trips need about 14.4 GB, more than an 8 GB laptop has. Phase 1 and step 1 therefore
+As objects, all 71.7M trips need about 14.4 GB, which leaves almost nothing of a 16 GB laptop for the system, and loading them as objects peaked at about twice the data size on the test file. We did not try the full file as objects. Phase 1 and step 1 therefore
 run on a smaller file, and every version uses that same file so the numbers can be compared.
 
 ```bash
@@ -110,7 +110,7 @@ OMP_NUM_THREADS=8 ./build/taxi_threads $FILE        # step 1: objects + threads
 OMP_NUM_THREADS=8 ./build/taxi_threads $FILE old    # step 1 with Phase 1's parsing (timegm, stod)
 OMP_NUM_THREADS=8 ./build/taxi_compact $FILE        # step 2: compact arrays + threads
 
-# step 2 is the only version that can load the whole file on an 8 GB Mac
+# step 2 is the only version that can load the whole file on a 16 GB Mac
 OMP_NUM_THREADS=8 ./build/taxi_compact ~/Downloads/taxi2014/yellow_tripdata_2014_jan_may.csv
 cd ..
 ```
@@ -122,7 +122,7 @@ lookups, and adds one line to `results/phase1_v2_runs.csv` or `results/phase2_ru
 
 Before measuring: **close Chrome and other heavy apps**, and keep the laptop plugged in.
 
-### Everything at once (about 1.5 hours)
+### Everything at once (about 1 hour)
 
 ```bash
 caffeinate -i ./scripts/run_everything.sh \
@@ -134,13 +134,14 @@ caffeinate -i ./scripts/run_everything.sh \
 | Stage | What it runs | Time |
 | --- | --- | --- |
 | `build` | Builds both projects | 1 min |
-| `phase1` | Phase 1, 10 runs | ~15 min |
-| `phase2` | Step 1 (Phase 1 parsing: 3 runs; our parsing: 10 runs) and step 2 (10 runs), at 1, 2, 4 and 8 threads | ~65 min |
+| `phase1` | Phase 1, 10 runs | ~8 min |
+| `phase2` | Step 1 (Phase 1 parsing: 3 runs; our parsing: 10 runs) and step 2 (10 runs), at 1, 2, 4 and 8 threads | ~45 min |
 | `fulldata` | Step 2 on all 71.7M trips, 8 threads, 3 runs | ~3 min |
-| `memory` | Memory-over-time recordings of Phase 1, step 1 and step 2 | ~2 min |
+| `memory` | Memory-over-time recordings of Phase 1, step 1 and step 2 | ~1 min |
 | `summary` | Writes `results_summary.md` and the charts | seconds |
 
 - **Run only some stages** by naming them, e.g. `STAGES="phase2 summary" ./scripts/run_everything.sh <test file> <full file>`.
+- **Full file at 1, 2, 4 and 8 threads:** `./scripts/full_sweep.sh <full file> 3` runs step 2 on all 71.7M trips, 3 runs per thread count (about 15 min; results go to `phase2/full_data/results/`). Run it before the `summary` stage, or re-run `STAGES=summary ./scripts/run_everything.sh <test file> <full file>` afterwards, so `results_summary.md` includes it.
 - **Earlier results are never overwritten:** before measuring, the script moves them to `old_results/<date-time>/`.
 
 ### One phase at a time
