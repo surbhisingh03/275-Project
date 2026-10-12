@@ -25,6 +25,6 @@ cmake --build build
 ```
 
 An optional second number limits how many trips are loaded (0 = all). One `TaxiTrip` is 216 bytes with g++,
-so all 71.7M trips need about 15 GB, more than an 8 GB laptop has; that is why we use `trips_every7th.csv`
+so all 71.7M trips need about 15 GB (about twice that at peak while loading), too tight for a 16 GB laptop (not tried); that is why we use `trips_every7th.csv`
 (see the main README, section 3). Limiting the full file with a number does not work well: the file is in
 date order, so the first N trips are all from January.

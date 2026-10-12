@@ -10,18 +10,15 @@ bool loadTrips(const std::string& file_name, int threads, std::vector<TaxiTrip>&
     // every thread fills its own vector, so threads never write to the same place
     std::vector<std::vector<TaxiTrip>> parts(threads);
 
-    // Everything inside { } runs on every thread at the same time.
-    // Variables made inside (reader, trip) are private: each thread has its own.
+  
     #pragma omp parallel num_threads(threads)
     {
-        int id = omp_get_thread_num();   // 0, 1, 2, ...
+        int id = omp_get_thread_num();  
 
         CSVReader reader;
         reader.open(file_name, bounds[id], bounds[id + 1]);
 
-        // Make room up front so the vector never has to grow (growing copies everything).
-        // A line is about 210 bytes, so this part has at most (its bytes / 150) trips.
-        // Room that is never filled is never touched, so it does not use real memory.
+        
         parts[id].reserve((bounds[id + 1] - bounds[id]) / 150);
 
         TaxiTrip trip;
@@ -29,9 +26,8 @@ bool loadTrips(const std::string& file_name, int threads, std::vector<TaxiTrip>&
         {
             parts[id].push_back(trip);
         }
-    }   // here the program waits until every thread is finished
+    }  
 
-    // join the parts into one vector (in file order), freeing each part as we go
     long long total = 0;
     for (int i = 0; i < threads; i++) total += parts[i].size();
     trips.reserve(total);
@@ -40,14 +36,11 @@ bool loadTrips(const std::string& file_name, int threads, std::vector<TaxiTrip>&
     {
         trips.insert(trips.end(), parts[i].begin(), parts[i].end());
         parts[i].clear();
-        parts[i].shrink_to_fit();   // give the memory back now
+        parts[i].shrink_to_fit();   
     }
     return true;
 }
 
-// For the searches each thread checks a share of the trips and keeps its own totals.
-// reduction(+: ...) gives every thread its own copy of these variables, and adds the
-// copies together at the end. (It needs plain variables, so we fill SearchResult afterwards.)
 
 SearchResult searchByDistance(const std::vector<TaxiTrip>& trips, double min_miles, double max_miles)
 {

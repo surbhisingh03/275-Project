@@ -26,16 +26,14 @@ double now()
 double peakMemoryMB()
 {
 #ifdef __APPLE__
-    // macOS: the "footprint" (what Activity Monitor shows). It also counts memory the system
-    // has compressed or moved to disk. ru_maxrss misses those, so on a Mac that is short of
-    // RAM it reports too little.
+   
     rusage_info_v4 info;
     proc_pid_rusage(getpid(), RUSAGE_INFO_V4, (rusage_info_t*)&info);
     return info.ri_lifetime_max_phys_footprint / (1024.0 * 1024.0);
 #else
     rusage usage;
     getrusage(RUSAGE_SELF, &usage);
-    return usage.ru_maxrss / 1024.0;   // Linux gives kilobytes
+    return usage.ru_maxrss / 1024.0;   
 #endif
 }
 
@@ -70,7 +68,6 @@ int main(int argc, char** argv)
 
     std::cout << "File: " << file_name << std::endl;
 
-    // ---- load ----
     std::vector<TaxiTrip> trips;
     double start = now();
     if (!loadTrips(file_name, max_rows, trips))
@@ -81,7 +78,6 @@ int main(int argc, char** argv)
     double load_seconds = now() - start;
     double memory_mb = peakMemoryMB();
 
-    // the trip data itself: number of trips x bytes per trip (exact, unlike the peak below)
     double data_mb = trips.size() * sizeof(TaxiTrip) / (1024.0 * 1024.0);
 
     std::cout << "\nTrips loaded: " << trips.size() << std::endl;
@@ -90,9 +86,7 @@ int main(int argc, char** argv)
     std::cout << "Trip data in memory: " << data_mb << " MB" << std::endl;
     std::cout << "Peak memory (whole program): " << memory_mb << " MB" << std::endl;
 
-    // ---- the search: distance report, five buckets ----
-    // bucket i is: more than limits[i] miles, up to limits[i+1] miles.
-    // The first limit is -1 (not 0) so that trips of exactly 0 miles are counted in the first bucket.
+    
     double limits[] = {-1, 1, 3, 5, 10, 1e12};
     std::string bucket_names[] = {"0-1 mile trips", "1-3 mile trips", "3-5 mile trips",
                                   "5-10 mile trips", "Over-10-mile trips"};
@@ -112,10 +106,7 @@ int main(int argc, char** argv)
     }
     std::cout << "Distance report time (5 searches): " << distance_seconds << " s" << std::endl;
 
-    // ---- the second query: trip lookups by ID ----
-    // Like a help desk answering 1,000,000 passenger requests: each names one trip (its row
-    // number, as the data has no trip ID) and needs ALL its fields.
-    // Fixed seed, so every version and every run looks up the same trips.
+   
     const long long LOOKUPS = 1000000;
     std::mt19937_64 random_numbers(275);
     std::vector<long long> ids(LOOKUPS);
@@ -124,8 +115,7 @@ int main(int argc, char** argv)
         ids[k] = random_numbers() % trips.size();
     }
 
-    // Done 5 times. The first time can be slow if macOS compressed or swapped part of the
-    // trip data while loading; by the 5th time it is back in normal memory ("settled").
+    
     SearchResult looked_up;
     double lookup_first_seconds = 0, lookup_settled_seconds = 0;
     std::cout << "\nTrip lookups (" << LOOKUPS << " random trip IDs, all fields)" << std::endl;

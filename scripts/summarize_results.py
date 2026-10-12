@@ -1,14 +1,3 @@
-# Puts all our measurements side by side in one file: results_summary.md (in the 275-Project folder).
-#   python3 scripts/summarize_results.py
-# No extra packages needed.
-#
-# Reads (whatever exists):
-#   phase1_v2/results/phase1_v2_runs.csv            phase 1, 10 runs
-#   phase2/results/phase2_runs.csv                  step 1 (old + new parsing) and step 2, 1/2/4/8 threads
-#   (each run: load, distance report, memory, trip lookups)
-#   phase2/full_data/results/phase2_runs.csv        step 2 on the full file
-#   phase1_v2/results/run_*.txt, phase2/results/*.txt   program output, to check every version found the same trips
-#   memory_results/*.csv                            memory-over-time recordings
 
 import csv
 import glob
@@ -176,18 +165,19 @@ else:
         line()
         trips_full = int(full[0]["trips"])
         objects_gb = trips_full * 216 / 1024 ** 3
-        fits = "does not fit" if objects_gb > RAM_GB else "fits"
-        line("| Measure | Value |")
-        line("| --- | --- |")
-        line(f"| Trips | {trips_full:,} |")
-        line(f"| Runs (8 threads) | {len(full)} |")
-        line(f"| Load time | {avg(full, 'load_s'):.1f} s ({spread(full, 'load_s')}) |")
-        line(f"| Trip data in memory | {avg(full, 'data_mb') / 1024:.2f} GB |")
-        line(f"| Peak memory | {avg(full, 'peak_memory_mb') / 1024:.2f} GB |")
-        line(f"| Same trips as Phase 1 objects (216 bytes each) | {objects_gb:.1f} GB: {fits} in this Mac's {RAM_GB:.0f} GB |")
-        line(f"| Distance report | {avg(full, 'distance_report_s'):.3f} s |")
-        if "lookup_settled_s" in full[0]:
-            line(f"| Trip lookups (1M, settled) | {avg(full, 'lookup_settled_s'):.3f} s |")
+        # loading objects peaked at about twice the trip data on the test file (section 3), so compare that with RAM
+        fits = "would not fit comfortably (not tried)" if objects_gb * 2 > RAM_GB else "fits"
+        line(f"{trips_full:,} trips, trip data {avg(full, 'data_mb') / 1024:.2f} GB in memory. "
+             f"As Phase 1 objects (216 bytes each) the same trips are {objects_gb:.1f} GB (about {objects_gb * 2:.0f} GB at peak): "
+             f"{fits} in this Mac's {RAM_GB:.0f} GB.")
+        line()
+        line("| Threads | Runs | Load s (avg) | fastest–slowest | Distance report s | Trip lookups (1M, settled) s | Peak memory GB |")
+        line("| --- | --- | --- | --- | --- | --- | --- |")
+        for t in sorted({int(r["threads"]) for r in full}):
+            rows = [r for r in full if int(r["threads"]) == t]
+            lookup = f"{avg(rows, 'lookup_settled_s'):.3f}" if "lookup_settled_s" in rows[0] else "—"
+            line(f"| {t} | {len(rows)} | {avg(rows, 'load_s'):.1f} | {spread(rows, 'load_s', 1)} | "
+                 f"{avg(rows, 'distance_report_s'):.3f} | {lookup} | {avg(rows, 'peak_memory_mb') / 1024:.2f} |")
         line()
 
     # ---------- 5. same answers? ----------

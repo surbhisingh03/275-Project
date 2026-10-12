@@ -3,10 +3,8 @@
 #include "csv_reader.h"
 #include <omp.h>
 
-// 1 Jan 2014 00:00:00 in seconds since 1970. Our times are stored relative to this.
 const long long TIME_BASE = 1388534400;
 
-// ---------- converting to the small types ----------
 
 uint8_t vendorCode(const std::string& s)
 {
@@ -34,7 +32,7 @@ uint8_t paymentCode(const std::string& s)
 
 int32_t toCents(double dollars)
 {
-    return (int32_t)std::llround(dollars * 100);   // round, so 0.29 does not become 28 cents
+    return (int32_t)std::llround(dollars * 100);   
 }
 
 uint8_t toSmallNumber(int value)
@@ -46,8 +44,7 @@ uint8_t toSmallNumber(int value)
 
 void TripStore::addTrip(const TaxiTrip& t)
 {
-    // A bad date (-1) or a date before 2014 is negative here. uint32_t cannot hold negative
-    // numbers, so it wraps around to a date far in the future, which no time search ever asks for.
+   
     pickup_time.push_back((uint32_t)(t.pickup_time - TIME_BASE));
     dropoff_time.push_back((uint32_t)(t.dropoff_time - TIME_BASE));
     passenger_count.push_back(toSmallNumber(t.passenger_count));
@@ -71,9 +68,7 @@ void TripStore::addTrip(const TaxiTrip& t)
     surcharge_cents.push_back(toCents(t.imp_surcharge));
 }
 
-// Make room for "rows" trips in every array up front, so the arrays never have to grow
-// (growing means copying everything to a bigger block). Room that is never filled is
-// never touched, so it does not use real memory.
+
 void TripStore::reserveRows(long long rows)
 {
     pickup_time.reserve(rows);
@@ -96,21 +91,17 @@ void TripStore::reserveRows(long long rows)
     surcharge_cents.reserve(rows);
 }
 
-// Small helper: add all of "from" to the end of "to", then free "from".
-// "template <typename T>" lets this one function work for every array type we have
-// (uint32_t, uint8_t, float, int32_t); T stands for the type of the values in the array.
+
 template <typename T>
 void moveToEnd(std::vector<T>& to, std::vector<T>& from, long long total)
 {
     if ((long long)to.capacity() < total) to.reserve(total);   // room for all trips, once
     to.insert(to.end(), from.begin(), from.end());
     from.clear();
-    from.shrink_to_fit();   // give this piece's memory back right away
+    from.shrink_to_fit();   
 }
 
-// Join the threads' stores into this one, ONE COLUMN AT A TIME: first every thread's
-// pickup times, then every thread's dropoff times, and so on. Each piece is freed as soon as it
-// is copied, so at any moment only one extra column exists, never a second copy of everything.
+
 void TripStore::mergeParts(std::vector<TripStore>& parts)
 {
     long long total = 0;
@@ -138,14 +129,13 @@ void TripStore::mergeParts(std::vector<TripStore>& parts)
 
 int TripStore::bytesPerTrip() const
 {
-    return 2 * sizeof(uint32_t)    // pickup and dropoff time
-         + 1 * sizeof(uint8_t)     // passengers
-         + 5 * sizeof(float)       // distance + 4 coordinates
-         + 4 * sizeof(uint8_t)     // vendor, flag, payment, rate code
-         + 6 * sizeof(int32_t);    // money columns
+    return 2 * sizeof(uint32_t)   
+         + 1 * sizeof(uint8_t)     
+         + 5 * sizeof(float)       
+         + 4 * sizeof(uint8_t)     
+         + 6 * sizeof(int32_t);    
 }
 
-// ---------- loading (same file splitting as step 1) ----------
 
 bool TripStore::load(const std::string& file_name, int threads)
 {
@@ -162,30 +152,22 @@ bool TripStore::load(const std::string& file_name, int threads)
         CSVReader reader;
         reader.open(file_name, bounds[id], bounds[id + 1]);
 
-        // A line is about 210 bytes, so this part has at most (its bytes / 150) trips.
         parts[id].reserveRows((bounds[id + 1] - bounds[id]) / 150);
 
-        TaxiTrip trip;   // only used for a moment, then converted to small types
+        TaxiTrip trip;  
         while (reader.readNext(trip))
         {
             parts[id].addTrip(trip);
         }
-    }   // here the program waits until every thread is finished
+    }   
 
     mergeParts(parts);
     return true;
 }
 
-// ---------- searches ----------
-// Each search only reads the arrays it needs. A distance search reads the distance and the
-// three money arrays, never the times, coordinates or codes, so far less memory is read than
-// in phase 1, where every 216-byte trip object passes through the CPU.
-// Money is added up in whole cents (exact), then turned back into dollars at the end.
 
 SearchResult TripStore::searchByDistance(double min_miles, double max_miles) const
 {
-    // Note: distances are floats now. A value right at the edge (like 2.9999999) can land on the
-    // other side of the limit than in phase 1, so counts could differ very slightly. We check this.
     float low = (float)min_miles;
     float high = (float)max_miles;
     long long count = 0, fare = 0, tip = 0, total = 0;
