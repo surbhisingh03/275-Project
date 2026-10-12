@@ -3,16 +3,10 @@
 #include <ctime>
 #include <vector>
 
-// The file has 19 columns, always in this order:
-//  0 vendor_id          1 pickup_datetime    2 dropoff_datetime   3 passenger_count
-//  4 trip_distance      5 pickup_longitude   6 pickup_latitude    7 store_and_fwd_flag
-//  8 dropoff_longitude  9 dropoff_latitude  10 payment_type      11 fare_amount
-// 12 mta_tax           13 tip_amount        14 tolls_amount      15 total_amount
-// 16 imp_surcharge     17 extra (always empty, not stored)       18 rate_code
+
 const int COLUMN_COUNT = 19;
 
-// Split one line into fields at each comma.
-// Every field in the file is in quotes ("VTS"), so the quote characters are skipped.
+
 std::vector<std::string> splitLine(const std::string& line)
 {
     std::vector<std::string> fields;
@@ -30,7 +24,7 @@ std::vector<std::string> splitLine(const std::string& line)
             current += c;
         }
     }
-    fields.push_back(current);   // last field
+    fields.push_back(current);   
     return fields;
 }
 
@@ -43,19 +37,16 @@ long long parseDate(const std::string& text)
     }
 
     std::tm t = {};
-    t.tm_year = year - 1900;   // tm counts years from 1900
-    t.tm_mon = month - 1;      // and months from 0
+    t.tm_year = year - 1900;   
+    t.tm_mon = month - 1;      
     t.tm_mday = day;
     t.tm_hour = hour;
     t.tm_min = minute;
     t.tm_sec = second;
-    return timegm(&t);   // treat the time as UTC so the result does not depend on the laptop's time zone
+    return timegm(&t);  
 }
 
-// Empty field -> 0, otherwise convert the text to a number.
-// std::stod / std::stoi throw an error if the text is not a number ("abc") or is too big.
-// We catch that and use 0, so one bad value cannot stop the whole load. The trip is still kept,
-// the same as phase 2's from_chars does, so both phases load the same number of trips.
+
 double toDouble(const std::string& s)
 {
     if (s.empty()) return 0;
@@ -88,7 +79,7 @@ bool CSVReader::open(const std::string& file_name)
     if (!fin.is_open()) return false;
 
     std::string header;
-    std::getline(fin, header);   // skip the header line
+    std::getline(fin, header);   
     return true;
 }
 
@@ -99,7 +90,6 @@ bool CSVReader::readNext(TaxiTrip& trip)
     {
         std::vector<std::string> f = splitLine(line);
 
-        // a broken line (wrong number of columns) would make f[...] read past the end, so skip it
         if (f.size() != COLUMN_COUNT) continue;
 
         trip.vendor_id          = f[0];

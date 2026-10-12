@@ -1,14 +1,3 @@
-# Puts all our measurements side by side in one file: results_summary.md (in the 275-Project folder).
-#   python3 scripts/summarize_results.py
-# No extra packages needed.
-#
-# Reads (whatever exists):
-#   phase1_v2/results/phase1_v2_runs.csv            phase 1, 10 runs
-#   phase2/results/phase2_runs.csv                  step 1 (old + new parsing) and step 2, 1/2/4/8 threads
-#   (each run: load, distance report, memory, trip lookups)
-#   phase2/full_data/results/phase2_runs.csv        step 2 on the full file
-#   phase1_v2/results/run_*.txt, phase2/results/*.txt   program output, to check every version found the same trips
-#   memory_results/*.csv                            memory-over-time recordings
 
 import csv
 import glob

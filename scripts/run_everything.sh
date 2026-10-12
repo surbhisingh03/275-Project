@@ -1,22 +1,4 @@
-#!/usr/bin/env bash
-# Runs every measurement for the report, then writes results_summary.md.
-#
-# Usage (from the 275-Project folder):
-#   caffeinate -i ./scripts/run_everything.sh <test_file.csv> <full_file.csv> 2>&1 | tee run_everything.log
-# e.g.
-#   caffeinate -i ./scripts/run_everything.sh ~/Downloads/taxi2014/trips_every7th.csv \
-#       ~/Downloads/taxi2014/yellow_tripdata_2014_jan_may.csv 2>&1 | tee run_everything.log
-#
-# Stages (all run by default, in this order). To run only some:  STAGES="phase2 summary" ./scripts/run_everything.sh ...
-#   build      build phase1_v2 and phase2 (Release, g++-16)                                   ~1 min
-#   phase1     phase 1, 10 runs on the test file                                              ~15 min
-#   phase2     step 1 (old + new parsing) and step 2, 1/2/4/8 threads (10 runs, old: 3)        ~65 min
-#   fulldata   step 2 on the FULL file, 8 threads, 3 runs                                      ~3 min
-#   memory     memory-over-time recordings: phase 1, step 1, step 2 (8 threads)              ~2 min
-#   summary    results_summary.md + charts
-#
-# Before starting: close Chrome and other heavy apps, keep the Mac plugged in.
-# Old results are moved to old_results/<date-time>/ first, so every run starts clean.
+
 
 set -u
 PROJECT="$(cd "$(dirname "$0")/.." && pwd)"

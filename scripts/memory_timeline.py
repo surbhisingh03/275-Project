@@ -1,19 +1,3 @@
-# Watch how much memory a program uses while it runs, and draw it as a line over time.
-#
-# 1) Record one program (repeat for each version you want to compare):
-#      python3 scripts/memory_timeline.py record <name> <command...>
-#    e.g.
-#      python3 scripts/memory_timeline.py record phase1 phase1_v2/build/taxi_phase1 ~/Downloads/taxi2014/trips_every7th.csv
-#      OMP_NUM_THREADS=8 python3 scripts/memory_timeline.py record step2 phase2/build/taxi_compact ~/Downloads/taxi2014/trips_every7th.csv
-#    This writes memory_results/<name>.csv (seconds, MB).
-#
-# 2) Draw every recording on one chart:
-#      python3 scripts/memory_timeline.py plot
-#    This writes memory_results/memory_timeline.png
-#
-# Memory = the macOS "footprint" (what Activity Monitor shows in its Memory column), checked
-# every 0.1 seconds. It counts memory that macOS has compressed or moved to disk too.
-# macOS only. Needs matplotlib for the plot:  python3 -m pip install matplotlib
 
 import csv
 import ctypes

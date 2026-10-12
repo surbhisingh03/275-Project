@@ -1,15 +1,3 @@
-# Makes the two charts for the slide from our results files.
-#   python3 make_charts.py            (uses the trip count with the most phase 2 runs)
-#   python3 make_charts.py 10000000   (only runs that loaded exactly 10,000,000 trips)
-# Needs matplotlib once:  python3 -m pip install matplotlib
-#
-# Reads:  ../phase1_v2/results/phase1_v2_runs.csv  (phase 1, if it exists)
-#         results/phase2_runs.csv                   (phase 2)
-# Writes: results/signal1_threads.png, results/signal2_data_size.png
-#         and prints the averages (with fastest and slowest run) for the report.
-#
-# Runs on different data files cannot be compared, so only runs with the SAME number
-# of trips are used. Runs with other trip counts are listed and left out.
 
 import csv
 import os
@@ -37,7 +25,7 @@ def read_runs(path, version_name=None):
         return rows
     with open(path) as f:
         for r in csv.DictReader(f):
-            if version_name:              # the phase 1 file has no version/threads columns
+            if version_name:             
                 r["version"] = version_name
                 r["threads"] = "1"
             rows.append(r)
@@ -58,7 +46,6 @@ if not all_runs:
     print("No results yet. Run the programs first.")
     raise SystemExit
 
-# ---- choose which trip count to use ----
 runs_per_trip_count = {}
 for r in all_runs:
     trips = int(r["trips"])
@@ -67,7 +54,6 @@ for r in all_runs:
 if len(sys.argv) >= 2:
     trips = int(sys.argv[1])
 else:
-    # the trip count with the most phase 2 runs (or the most runs at all, if there is no phase 2 yet)
     counts = {}
     for r in (phase2_runs if phase2_runs else all_runs):
         counts[int(r["trips"])] = counts.get(int(r["trips"]), 0) + 1

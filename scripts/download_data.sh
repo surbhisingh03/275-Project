@@ -1,21 +1,4 @@
-#!/usr/bin/env bash
-# Download NYC 2014 Yellow Taxi trips (NYC Open Data dataset gkne-dk5s) for 1 Jan - 31 May 2014.
-#
-# How it works: one API request per day (pickup_datetime in [day, day+1)), several days at once,
-# then the days are joined in date order into one CSV with a single header.
-# Each request is slow on its own (~0.2-0.3 MB/s) but they run side by side.
-# (Paging through the whole table was faster at first, but requests for pages far into the table
-#  waited many minutes before sending anything, so that approach could not finish.)
-#
-# Usage:
-#   scripts/download_data.sh [OUT_DIR]
-# Environment overrides:
-#   START=2014-01-01   first pickup day (inclusive)
-#   END=2014-05-31     last pickup day (inclusive)
-#   PAR=12             requests at the same time (lower it if you see many FAILED lines)
-#   APP_TOKEN=...      optional free Socrata app token (reduces throttling)
-#
-# Safe to re-run: finished days are skipped, unfinished ones are downloaded again.
+
 
 set -euo pipefail
 
@@ -38,7 +21,6 @@ fetch_day() {
   [ -f "$out" ] && return 0
   local hdr=()
   [ -n "$APP_TOKEN" ] && hdr=(-H "X-App-Token: $APP_TOKEN")
-  # give up on a transfer only if almost nothing arrives for 5 minutes, then retry
   if curl -sS -f --retry 5 --retry-delay 30 --speed-limit 1000 --speed-time 300 \
        ${hdr[@]+"${hdr[@]}"} -G "$URL" \
        --data-urlencode "\$where=pickup_datetime >= '${day}T00:00:00' AND pickup_datetime < '${next}T00:00:00'" \
@@ -55,7 +37,6 @@ fetch_day() {
 export -f fetch_day next_day
 export OUT_DIR URL APP_TOKEN
 
-# list every day from START to END
 days=()
 d="$START"
 while [[ "$d" < "$END" || "$d" == "$END" ]]; do
@@ -78,7 +59,6 @@ if [ "$missing" -gt 0 ]; then
 fi
 echo "All days downloaded in $(( ($(date +%s) - start) / 60 )) min"
 
-# join the days in date order, keeping one header line
 FINAL="$OUT_DIR/yellow_tripdata_2014_jan_may.csv"
 [ "$START" == "2014-01-01" ] && [ "$END" == "2014-05-31" ] || FINAL="$OUT_DIR/yellow_tripdata_${START}_to_${END}.csv"
 head -n 1 "$OUT_DIR/days/${days[0]}.csv" > "$FINAL"
