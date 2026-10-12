@@ -60,19 +60,6 @@ double toDouble(const std::string& s)
     }
 }
 
-int toInt(const std::string& s)
-{
-    if (s.empty()) return 0;
-    try
-    {
-        return std::stoi(s);
-    }
-    catch (...)
-    {
-        return 0;
-    }
-}
-
 bool CSVReader::open(const std::string& file_name)
 {
     fin.open(file_name);
@@ -92,24 +79,12 @@ bool CSVReader::readNext(TaxiTrip& trip)
 
         if (f.size() != COLUMN_COUNT) continue;
 
-        trip.vendor_id          = f[0];
-        trip.pickup_time        = parseDate(f[1]);
-        trip.dropoff_time       = parseDate(f[2]);
-        trip.passenger_count    = toInt(f[3]);
-        trip.trip_distance      = toDouble(f[4]);
-        trip.pickup_longitude   = toDouble(f[5]);
-        trip.pickup_latitude    = toDouble(f[6]);
-        trip.store_and_fwd_flag = f[7];
-        trip.dropoff_longitude  = toDouble(f[8]);
-        trip.dropoff_latitude   = toDouble(f[9]);
-        trip.payment_type       = f[10];
-        trip.fare_amount        = toDouble(f[11]);
-        trip.mta_tax            = toDouble(f[12]);
-        trip.tip_amount         = toDouble(f[13]);
-        trip.tolls_amount       = toDouble(f[14]);
-        trip.total_amount       = toDouble(f[15]);
-        trip.imp_surcharge      = toDouble(f[16]);
-        trip.rate_code          = toInt(f[18]);
+        trip.pickup_time   = parseDate(f[1]);
+        trip.dropoff_time  = parseDate(f[2]);
+        trip.trip_distance = toDouble(f[4]);
+        trip.fare_amount   = toDouble(f[11]);
+        trip.tip_amount    = toDouble(f[13]);
+        trip.total_amount  = toDouble(f[15]);
         return true;
     }
     return false;

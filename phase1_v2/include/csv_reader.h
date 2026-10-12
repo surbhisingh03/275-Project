@@ -14,5 +14,6 @@ private:
     std::ifstream fin;
 };
 
+
 // Turns "2014-01-30T08:15:00.000" into seconds since 1 Jan 1970. Returns -1 if the date is bad.
 long long parseDate(const std::string& text);

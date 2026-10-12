@@ -10,3 +10,8 @@ run_everything.log
 phase2/cache_off/results/*.txt
 phase2/full_data/results/*.txt
 .venv/
+
+# old runs (all-fields version) and sweep logs
+phase1_v2/results_old_all_fields/
+phase2/results_old_all_fields/
+*/results/sweep.log

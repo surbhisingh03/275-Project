@@ -26,24 +26,9 @@ private:
     std::vector<uint32_t> pickup_time;
     std::vector<uint32_t> dropoff_time;
 
-    std::vector<uint8_t> passenger_count;  
+    // The four fields both queries use, each stored in a smaller type.
     std::vector<float> trip_distance;
-
-    std::vector<float> pickup_longitude;
-    std::vector<float> pickup_latitude;
-    std::vector<float> dropoff_longitude;
-    std::vector<float> dropoff_latitude;
-
-   
-    std::vector<uint8_t> vendor;         
-    std::vector<uint8_t> store_and_fwd;   
-    std::vector<uint8_t> payment;         
-    std::vector<uint8_t> rate_code;
-
     std::vector<int32_t> fare_cents;
-    std::vector<int32_t> mta_tax_cents;
     std::vector<int32_t> tip_cents;
-    std::vector<int32_t> tolls_cents;
     std::vector<int32_t> total_cents;
-    std::vector<int32_t> surcharge_cents;
 };

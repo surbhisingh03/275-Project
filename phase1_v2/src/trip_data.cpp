@@ -46,11 +46,6 @@ SearchResult lookupTrips(const std::vector<TaxiTrip>& trips, const std::vector<l
     {
         const TaxiTrip& t = trips[ids[k]];
         addToResult(result, t);   // fare, distance, tip, total
-        // the other 14 fields
-        result.all_fields_sum += (double)t.pickup_time + t.dropoff_time + t.passenger_count
-            + t.pickup_longitude + t.pickup_latitude + t.dropoff_longitude + t.dropoff_latitude
-            + t.vendor_id[0] + t.store_and_fwd_flag[0] + t.payment_type[0] + t.rate_code
-            + t.mta_tax + t.tolls_amount + t.imp_surcharge;
     }
     return result;
 }

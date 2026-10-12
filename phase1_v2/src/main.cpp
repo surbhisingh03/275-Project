@@ -118,7 +118,7 @@ int main(int argc, char** argv)
     
     SearchResult looked_up;
     double lookup_first_seconds = 0, lookup_settled_seconds = 0;
-    std::cout << "\nTrip lookups (" << LOOKUPS << " random trip IDs, all fields)" << std::endl;
+    std::cout << "\nTrip lookups (" << LOOKUPS << " random trip IDs)" << std::endl;
     for (int round = 1; round <= 5; round++)
     {
         start = now();
